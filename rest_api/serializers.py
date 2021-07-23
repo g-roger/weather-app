@@ -1,3 +1,10 @@
 from rest_framework import serializers
 
-# Implement your serializers here
+from .models import Weather
+
+
+class WeatherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Weather
+        fields = '__all__'
+        verbose_name = 'Weather'
