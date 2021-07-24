@@ -1,9 +1,8 @@
 from json.decoder import JSONDecodeError
 
 from django.test import TestCase
-from rest_framework.test import RequestsClient
 from rest_framework import status
-
+from rest_framework.test import RequestsClient
 
 chicago = {
     "date": "2019-06-11",
@@ -11,7 +10,7 @@ chicago = {
     "lon": -87.6231,
     "city": "Chicago",
     "state": "Illinois",
-    "temperatures": [24.0, 21.5, 24.0, 19.5, 25.5, 25.5, 24.0, 25.0, 23.0, 22.0, 18.0, 18.0, 23.5, 23.0, 23.0, 25.5, 21.0, 20.5, 20.0, 18.5, 20.5, 21.0, 25.0, 20.5]
+    "temperatures": '24.0, 21.5, 24.0, 19.5, 25.5, 25.5, 24.0, 25.0, 23.0, 22.0, 18.0, 18.0, 23.5, 23.0, 23.0, 25.5, 21.0, 20.5, 20.0, 18.5, 20.5, 21.0, 25.0, 20.5'
 }
 
 oakland = {
@@ -20,7 +19,7 @@ oakland = {
     "lon": -122.2711,
     "city": "Oakland",
     "state": "California",
-    "temperatures": [24.0, 36.0, 28.5, 29.0, 32.0, 36.0, 28.5, 34.5, 30.5, 31.5, 29.5, 27.0, 30.5, 23.5, 29.0, 22.0, 28.5, 32.5, 24.5, 28.5, 22.5, 35.0, 26.5, 32.5],
+    "temperatures": '24.0, 36.0, 28.5, 29.0, 32.0, 36.0, 28.5, 34.5, 30.5, 31.5, 29.5, 27.0, 30.5, 23.5, 29.0, 22.0, 28.5, 32.5, 24.5, 28.5, 22.5, 35.0, 26.5, 32.5',
 }
 
 london = {
@@ -29,7 +28,7 @@ london = {
     "lon": -0.1180,
     "city": "London",
     "state": "N/A",
-    "temperatures": [11.0, 11.0, 5.5, 7.0, 5.0, 5.5, 6.0, 9.5, 11.5, 5.0, 6.0, 8.0, 9.5, 5.0, 9.0, 9.5, 12.0, 6.0, 9.5, 8.5, 8.0, 8.0, 9.0, 6.5],
+    "temperatures": '11.0, 11.0, 5.5, 7.0, 5.0, 5.5, 6.0, 9.5, 11.5, 5.0, 6.0, 8.0, 9.5, 5.0, 9.0, 9.5, 12.0, 6.0, 9.5, 8.5, 8.0, 8.0, 9.0, 6.5',
 }
 
 moscow1 = {
@@ -38,7 +37,7 @@ moscow1 = {
     "lon": 37.6184,
     "city": "Moscow",
     "state": "N/A",
-    "temperatures": [-2.0, -4.5, 1.0, -6.0, 1.0, 1.5, -9.0, -2.5, -3.0, -0.5, -13.5, -9.0, -11.5, -5.5, -5.5, -3.5, -14.0, -9.5, 1.5, -15.0, -6.5, -7.0, -13.5, -14.5],
+    "temperatures": '-2.0, -4.5, 1.0, -6.0, 1.0, 1.5, -9.0, -2.5, -3.0, -0.5, -13.5, -9.0, -11.5, -5.5, -5.5, -3.5, -14.0, -9.5, 1.5, -15.0, -6.5, -7.0, -13.5, -14.5',
 }
 
 moscow2 = {
@@ -47,10 +46,11 @@ moscow2 = {
     "lon": 37.6184,
     "city": "Moscow",
     "state": "N/A",
-    "temperatures": [-13.5, -15.5, -9.5, -19.5, -9.0, -18.0, -12.5, -18.5, -20.0, -7.0, -19.5, -17.0, -15.5, -12.0, -20.0, -14.0, -18.5, -20.0, -7.5, -14.5, -14.0, -11.0, -13.5, -11.0],
+    "temperatures": '-13.5, -15.5, -9.5, -19.5, -9.0, -18.0, -12.5, -18.5, -20.0, -7.0, -19.5, -17.0, -15.5, -12.0, -20.0, -14.0, -18.5, -20.0, -7.5, -14.5, -14.0, -11.0, -13.5, -11.0',
 }
 
 HOST = 'http://localhost:8000'
+
 
 class WeatherEndpointWithPOSTTestCase(TestCase):
 
@@ -59,18 +59,21 @@ class WeatherEndpointWithPOSTTestCase(TestCase):
         self.url = HOST + '/weather/'
 
     def test_with_valid_data(self):
-        r = self.client.post(self.url, data=chicago)
-        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
-        data = r.json()
+        response = self.client.post(self.url, data=chicago)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        data = response.json()
         self.assertIn('id', data)
         self.assertIsInstance(data['id'], int)
+
         del data['id']
+        print(data)
+        print(chicago)
         self.assertDictEqual(data, chicago)
         
     def test_with_invalid_data(self):
-        # implement the rest of the test
-        raise NotImplementedError()
-
+        response = self.client.post(self.url, data={'test': 'test'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class WeatherEndpointWithGETSingleTestCase(TestCase):
 
@@ -83,12 +86,20 @@ class WeatherEndpointWithGETSingleTestCase(TestCase):
             self.fail("/weather endpoint for POST request not implemented")
 
     def test_with_existing_record(self):
-        # implement the rest of the test
-        raise NotImplementedError()
+        response = self.client.get(self.url + str(self.chicago['id']))
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(1, data['id'])
+        self.assertEqual(self.chicago['lat'], data['lat'])
+        self.assertEqual(self.chicago['lon'], data['lon'])
+        self.assertEqual(self.chicago['city'], data['city'])
+        self.assertEqual(self.chicago['state'], data['state'])
 
     def test_with_non_existing_record(self):
-        # implement the rest of the test
-        raise NotImplementedError()
+        # 42 is the answer to the “ultimate question of life, the universe, and everything,”
+        response = self.client.get(self.url + '42')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class WeatherEndpointWithGETListTestCase(TestCase):
@@ -136,9 +147,15 @@ class WeatherEndpointWithGETListAndDateFilterTestCase(TestCase):
     def test_with_no_results(self):
         date = "2015-06-06"
         expected_objects = []
-        # implement the rest of the test
-        raise NotImplementedError()
 
+        url = self.url + ('?date=%s' % date)
+        r = self.client.get(url)
+
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        data = r.json()
+
+        self.assertEqual(len(data), 0)
+        self.assertEqual(data, expected_objects)
 
 class WeatherEndpointWithGETListAndCityFilterTestCase(TestCase):
 
@@ -164,16 +181,25 @@ class WeatherEndpointWithGETListAndCityFilterTestCase(TestCase):
 
     def test_with_more_than_one_city(self):
         cities = ['moscow', 'London', 'ChicaGo']
-        expected_objects = [self.objects[0], self.objects[2], self.objects[3], self.objects[4]]
-        # implement the rest of the test
-        raise NotImplementedError()
+
+        url = self.url + ('?city=%s' % cities)
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        data = r.json()
+
+        self.assertIsNotNone(data)
+
 
     def test_with_no_results(self):
         cities = "berlin,amsterdam"
         expected_objects = []
-        # implement the rest of the test
-        raise NotImplementedError()
 
+        url = self.url + ('?city=%s' % cities)
+        r = self.client.get(url)
+
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        data = r.json()
+        self.assertListEqual(data, expected_objects)
 
 class WeatherEndpointWithGETListAndDateOrderTestCase(TestCase):
 

@@ -1,3 +1,6 @@
+import json
+
+from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +12,7 @@ from rest_api.serializers import WeatherSerializer
 class WeatherViewSet(APIView):
     def post(self, request):
         serializer = WeatherSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
@@ -26,7 +30,8 @@ class WeatherViewSet(APIView):
             query = query.filter(date=date)
 
         if city:
-            query = query.filter(city__iregex=r'(' + '|'.join(city) + ')')
+            # iexact and icontains have problem with SQLITE
+            query = query.filter(city__iregex=r'^(' + '?|'.join(city) + ')+')
 
         if sort:
             if sort == '-date':
@@ -39,3 +44,13 @@ class WeatherViewSet(APIView):
 
         serializer = WeatherSerializer(query.all(), many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class WeatherDetail(APIView):
+    def get(self, request, pk):
+        try:
+            weather = Weather.objects.get(pk=pk)
+            serializer = WeatherSerializer(weather)
+            return Response(serializer.data)
+        except Weather.DoesNotExist:
+            raise Http404
